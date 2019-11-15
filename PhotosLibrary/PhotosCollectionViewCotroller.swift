@@ -28,12 +28,40 @@ class PhotosCollectionViewCotroller: UICollectionViewController {
         return UIBarButtonItem(barButtonSystemItem: .action , target: self, action: #selector(actionBarButtonTapped))
     }()
     
+    private var numberOfSelectedPhotos: Int {
+        return collectionView.indexPathsForSelectedItems?.count ?? 0
+    }
+    
+    private func undateNavButtonsState() {
+        addBarButtonItem.isEnabled = numberOfSelectedPhotos > 0
+        actionBarButtonItem.isEnabled = numberOfSelectedPhotos > 0
+    }
+    
+    func refresh() {
+        self.selectedImages.removeAll()
+        self.collectionView.selectItem(at: nil, animated: true, scrollPosition: [])
+        undateNavButtonsState()
+    }
+    
     @objc private func addBarButtonTapped() {
         print(#function)
     }
     
-    @objc private func actionBarButtonTapped() {
+    @objc private func actionBarButtonTapped(sender: UIBarButtonItem) {
         print(#function)
+        
+        let shareController = UIActivityViewController(activityItems: selectedImages, applicationActivities: nil)
+        
+        
+        shareController.completionWithItemsHandler = { _, bool, _, _ in
+            if bool {
+                self.refresh()
+            }
+        }
+        
+        shareController.popoverPresentationController?.barButtonItem = sender
+        shareController.popoverPresentationController?.permittedArrowDirections = .any
+        present(shareController, animated: true, completion: nil)
     }
     
     override func viewDidLoad() {
